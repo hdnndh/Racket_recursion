@@ -1,0 +1,170 @@
+#lang racket
+
+;The following two lines are required to test the code.
+(require rackunit)
+(require rackunit/text-ui)
+
+#|
+CS 270 Winter 2019
+Homework 2
+Content by:  Profs. Bruce Char
+
+Complete each of the  functions below.  You should also
+complete and correct the set of unit tests provided
+for each function.  You may find that some of the tests are incorrect,
+or that the ones that are provided are not good enough to check important
+cases.  For example, not testing when the input list L has sublists, or is
+the empty list.  One way to self-check your unit cases is to ask yourself,
+do I have a test case for each function that makes sure that every line in that
+function is eecuted at least once?  For eample, if you have an if function
+in the function definition, there should be a test input that causes the "true"
+branch of the if to be executed, and another that causes the "false" branch
+to be executed.
+
+This assignment is more than writing code that meets test cases provided
+by the instructor.  You have to determine what "completely correct" operation
+of a function means, and then put in the code that delivers it and the
+unit tests and checks it out thoroughly.
+
+.
+
+Once you write a function, you may use it in later questions.  For example, once
+you have a "subs" function that works one substitution on every item of
+a list, then you can use it in functions you write that provide various kinds
+of substitutions when there is a list of substitutions to follow.
+
+Use of loop commands for/while, etc. will result in 0 points for the question.
+We'd like to practice using recursion instead.
+
+Use of the built-in and/or/not commands will result in 0 points for the question.
+For this homework, we'd like you to demonstrate that you understand
+how boolean logic works at the lowest levels, rather than having
+something automatic do it for you.
+
+
+
+
+
+|#
+
+;We can implement the subs function in about seventeen lines of Racket code.
+;Of course almost half are comments, and makes
+;the code more readable by indenting subexpressions on additional lines.
+
+; input-spec L is a list (possibly nested list)
+; pair is a list with two members (A B)
+; where A and B are expressions or values.  
+; output-spec  Each occurence of A that appears anywhere in L, at any depth, gets replaced by B
+
+; example: if L is the list '(x (y) z), then (sub L '(y 5)) would yield the list '(x (5) z)
+
+(define (sub L pair)
+   (if (null? L)
+       '()
+       (if (not (equal? (first L) (first pair)))
+           (cons (first L) (sub (rest L) pair))
+           (cons (second pair) (sub (rest L) pair))
+       )
+   )
+)
+
+(display "Testing function: sub\n")
+(define-test-suite test_sub
+  (check-equal? (sub '(1 2 3) '(1 2) ) '(2 2 3))
+  (check-equal? (sub '(1 2 1 3) '(1 2) ) '(2 2 2 3))
+  ;; need more tests!  And to check that the above are correct!'( (1 5) 2) ) '(1 2 (1 5 (3 2 (1 2 3) 2)) 3))
+
+)
+
+(run-tests test_sub 'verbose)
+
+;The following function takes us two lines to code,  not including comments.
+; If, when you think about
+;the solution, you come up with an answer that is much longer than this,
+;you should reconsider.  Lengthy code often is more likely to have mistakes.
+;  If you suspect that a good solution is much shorter than what you are doing
+;  then you should either convince yourself otherwise, or look for a better way.
+;  This includes getting more advice from the TA or instructor.
+
+
+; We can do the next function in two lines of code, not including comments.
+;input-spec L1 is a list (possibly nested list)
+; substitution1 and substitution2 are both pairs (A1 B1) and (A2 B2)
+; where Ai and Bi are expressions or values.  
+;output-spec  first substitutions are done of B1 for A1.  Then in that
+; result substitutions are done of B2 for A2.  So if A2 is the same as B1
+; then two changes might happen.
+(define (sequentialSub2 L1 substitution1 substitution2)
+  sub
+  )
+
+(display "Testing function: sequentialSub2\n")
+(define-test-suite test_sub2
+  (check-equal? (sequentialSub2 '(1 3 (1 5) 3) '(3 (1 5)) '((1 5) 17)) '(1 17 17 17))
+  (check-not-equal? (sequentialSub2 '(1 3 (1 5) 3) '(3 (1 5)) '((1 5) 17)) '(1 (1 5)  17 (1 5)))
+  ;(check-exn exn:fail:contract? (sequentialSubstitute2 '(1 3 (1 5) 3) '() '() ) '(1 3 (1 5) 3))
+  ;; need more tests!  And to check that the above are correct!'( (1 5) 2) ) '(1 2 (1 5 (3 2 (1 2 3) 2)) 3))
+)
+(run-tests test_sub2 'verbose)
+
+;The following function takes us five lines to code, not including comments.
+
+; input-spec  L is an arbitrary list or possibly an atom.
+; reps (short for "replacements") is a list of pairs
+; output-spec result is L but with each pair in the replacement list
+; substituted in turn.  So if one pair makes something
+; that a later pair applies to, that subsequent pair will be substituted too.
+
+(define  (sequentialSubMulti L substitutions)
+  null; dummy expression body, needs replacement
+ )
+
+(display "Testing function: sequentialSubMulti\n")
+(define-test-suite test_sequentialSubMulti
+  (check-equal? (sequentialSubMulti '(a b (c (d (x y b z (b)) q))) '((b 42)))  '(a 42 (c (d (x y 42 z (42)) q))))
+  (check-equal? (sequentialSubMulti
+                        '(1 (1 3 ) (1 3 5) (1 3 (1 3) (((1 3))))) '( ((1 3) 47) (3 48) ( (1 48 5) 61))) '(1 47 61 (1 48 47 ((47)))) )
+  ;; need more tests!  And to check that the above are correct!'( (1 5) 2) ) '(1 2 (1 5 (3 2 (1 2 3) 2)) 3))
+     )
+(run-tests test_sequentialSubMulti 'verbose)
+
+
+
+;input-spec L1 is a list (possibly nested list)
+; substitutions is a list of pairs ( (A1 B1) (A2 B2) ... (An Bn)
+; where Ai and Bi are expressions or values.  
+;output-spec  Each specified substitution is applied to the result
+; of the previous substitution.  So for each Aj  the same as some Bi for
+;i<j, multiple changes might happen.
+
+(define (sequentialSubR L substitution)
+  null; dummy expression body, needs replacement
+
+  )
+
+(display "Testing function: sequentialSubR\n")
+(define-test-suite test_sequentialSubR
+  (check-equal? (sequentialSubR '(1 2 3) '( 1 2) ) '(2 2 3))
+    ;; need more tests!  And to check that the above are correct!'( (1 5) 2) ) '(1 2 (1 5 (3 2 (1 2 3) 2)) 3))
+  )
+(run-tests test_sequentialSubR 'verbose)
+
+; input-spec  L1 is an arbitrary list or possibly an atom.
+; substitutions is a list of substitution pairs
+; output-spec result is L1 with each Substitutement in substitutions list
+; tried and performed in turn.  So if one Substitutement makes something
+; that a subsequent Substitutement applies to, that will be done too.
+
+(define  (sequentialSubRMulti L substitutions)
+   null; dummy expression body, needs replacement
+
+  )
+
+(display "Testing function: sequentialSubRMulti\n")
+(define-test-suite test_sequentialSubRMulti
+         (check-equal? (sequentialSubRMulti
+                        '(1 (1 3 ) (1 3 5) (1 3 (1 3) (((1 3))))) '( ((1 3) 47) (3 48) ( (1 48 5) 61))) '(1 47 61 (1 48 47 ((47)))) )
+        ;; need more tests!  And to check that the above are correct!
+  )
+(run-tests test_sequentialSubRMulti 'verbose)
+
